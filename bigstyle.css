@@ -1,0 +1,40 @@
+* { margin: 0px;
+    padding: 0px;
+}
+
+body { font-size: 120%;
+        background:#F8F8FF;
+      }
+
+.registerheader{
+      width: 30%;
+      margin: 50px auto 8px;
+      color: white;
+      background:#5F9EA0;
+      text-align: center;
+      border: 1px solid #B0C4DE;
+      border-bottom:none;
+      border-radius: 10px 10px 0px 0px;
+      padding: 20px;
+}
+
+form{width: 30%;
+      margin: 0px auto;
+      background: white;
+      text-align: center;
+      border: 1px solid #B0C4DE;
+      border-bottom:none;
+      border-radius: 0px 0px 10px 10px;
+      padding: 20px;
+}
+
+.error {
+  width: 92%
+  margin: 0px auto;
+  padding: 10px;
+  border: 1px solid #a94442
+  color: #a94442
+  background:#f2dede
+  border-radius: 5px;
+  text-align: left;
+  }
