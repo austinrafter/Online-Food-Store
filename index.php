@@ -1,5 +1,4 @@
 <?php include ('userserver.php');?>
-<?php include ('loginserver.php');?>
 <!DOCTYPE html>
 <html>
   <head>
