@@ -36,14 +36,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Validate credentials
     if(empty($username_err) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT username, password FROM users WHERE username = ? AND password = '$password'";
+        $sql = "SELECT username, password FROM users WHERE username = ?";
 
         if($stmt = mysqli_prepare($conn, $sql)){
+          // Set parameters
+          $param_username = $username;
+
             // Bind variables to the prepared statement as parameters
             mysqli_stmt_bind_param($stmt, "s", $param_username);
-
-            // Set parameters
-            $param_username = $username;
 
             // Attempt to execute the prepared statement
             if(mysqli_stmt_execute($stmt)){
@@ -55,16 +55,19 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     // Bind result variables
                     mysqli_stmt_bind_result($stmt, $username, $hashed_password);
                     if(mysqli_stmt_fetch($stmt)){
+                      //$temphashedpass = password_hash($password, PASSWORD_DEFAULT);
                         if(password_verify($password, $hashed_password)){
                             // Password is correct, so start a new session
                             session_start();
 
                             // Store data in session variables
                             $_SESSION["loggedin"] = true;
-                            $_SESSION["id"] = $id;
-                            $_SESSION["username"] = $username;
+                            $_SESSION["id"] = $user_id;
+                            $_SESSION["username"] = $user_id;
 
-                            // Redirect user to welcome page
+                            // Redirect user to welcome page with flash messages
+                            $_SESSION['message']= "You are now logged in!";
+                            $_SESSION['alert-class']="alert-success";
                             header("location: index.php");
                         } else{
                             // Display an error message if password is not valid
