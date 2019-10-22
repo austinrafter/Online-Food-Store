@@ -13,7 +13,7 @@ require_once 'config.php';
 {
     $username =$_POST['username'];
     $email = $_POST['email'];
-    $pass_1 = $_POST['pass_1'];
+    $password = $_POST['password'];
     $pass_2 = $_POST['pass_2'];
 
 
@@ -32,11 +32,11 @@ require_once 'config.php';
     $errors['email'] = "Email required";
   }
 
-  if(empty($pass_1)){
+  if(empty($password)){
     $errors['pass_1'] = "Password required";
   }
 
-  if($pass_1 !== $pass_2){
+  if($password !== $pass_2){
       $errors['pass_1'] = "Passwords do not match.";
   }
 
@@ -57,10 +57,11 @@ require_once 'config.php';
   //if no errors, save user to database
   if(count($errors) === 0)
   {
-    $pass_1 = password_hash($pass_1, PASSWORD_DEFAULT); //encrypt password before storage
-    $sql = "INSERT INTO users(username, email, password) VALUES('$_POST[username]','$_POST[email]','$_POST[pass_1]')";
-    mysqli_query($conn,$sql);
-    if (mysqli_query($conn,$sql)){
+    $password = password_hash($password, PASSWORD_DEFAULT); //encrypt password before storage
+    //rename $_POST['password'] to $password to hash when setting(maybe)
+    $sql = "INSERT INTO users(username, email, password) VALUES('$_POST[username]','$_POST[email]','$password')";
+    $query = mysqli_query($conn,$sql);
+    if ($query){
       //login user
       $user_id = $conn->insert_id;
       $_SESSION['id'] = $user_id;
