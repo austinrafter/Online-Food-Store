@@ -7,7 +7,8 @@ session_start();
 
 require_once 'config.php';
 
-//section to sign user up
+/*section to signup user*/
+
 
 //if the register button is clicked
   if(isset($_POST['register-btn']))
@@ -65,7 +66,7 @@ require_once 'config.php';
       //login user
       $user_id = $conn->insert_id;
       $_SESSION['id'] = $user_id;
-      $_SESSION['username'] = $user_id;
+      $_SESSION['username'] = $username;
       $_SESSION['email'] = $user_id;
 
 
@@ -82,16 +83,16 @@ require_once 'config.php';
   }
 }
 
+/* section to login user */
+
 // Check if the user is already logged in, if yes then redirect them to welcome page
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
     header("location: index.php");
     exit;
 }
 
-//section to log user in
-
 // Define variables and initialize with empty values
-$username = $password = "";
+$username = $password_log = "";
 $username_err = $password_err = "";
 
 // Processing form data when form is submitted
@@ -108,13 +109,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty(trim($_POST["password"]))){
         $password_err = "Please enter your password.";
     } else{
-        $password = trim($_POST["password"]);
+        $password_log = trim($_POST["password"]);
     }
 
     // Validate credentials
     if(empty($username_err) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT username, password FROM users WHERE username = ?";
+        $sql = "SELECT id, username, password FROM users WHERE username = ?";
 
         if($stmt = mysqli_prepare($conn, $sql)){
           // Set parameters
@@ -128,20 +129,30 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 // Store result
                 mysqli_stmt_store_result($stmt);
 
+
+
                 // Check if username exists, if yes then verify password
-                if(mysqli_stmt_num_rows($stmt) == 1){
+                if(mysqli_stmt_num_rows($stmt) == 1)
+                {
                     // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $username, $hashpassword);
-                    if(mysqli_stmt_fetch($stmt)){
-                      //$temphashedpass = password_hash($password, PASSWORD_DEFAULT);
-                        if(password_verify($password, $hashpassword)){
+                    mysqli_stmt_bind_result($stmt, $id, $username, $hashedpassword);
+                    //$result = $stmt-> get_result();
+                    //$user = $result-> fetch_assoc();
+                    if(mysqli_stmt_fetch($stmt))
+                    {
+                      //$temphashedpass = password_hash($password_log, PASSWORD_DEFAULT);
+                      echo $password_log;
+                      //echo "<br>";
+                      echo $hashedpassword;
+                        if(password_verify($password_log, $hashedpassword))
+                        {
                             // Password is correct, so start a new session
                             session_start();
 
                             // Store data in session variables
                             $_SESSION["loggedin"] = true;
-                            $_SESSION["id"] = $user_id;
-                            $_SESSION["username"] = $user_id;
+                            $_SESSION["id"] = $id;
+                            $_SESSION["username"] = $username;
 
                             // Redirect user to welcome page with flash messages
                             $_SESSION['message']= "You are now logged in!";
