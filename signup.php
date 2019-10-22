@@ -34,7 +34,7 @@
 
       <div class="register-input">
         <label>Password</label>
-        <input type="password" name="pass_1">
+        <input type="password" name="password">
       </div>
 
       <div class="register-input">
