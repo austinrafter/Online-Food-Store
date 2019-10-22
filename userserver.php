@@ -7,6 +7,7 @@ session_start();
 
 require_once 'config.php';
 
+//section to sign user up
 
 //if the register button is clicked
   if(isset($_POST['register-btn']))
@@ -87,7 +88,7 @@ if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
     exit;
 }
 
-//require_once 'config.php';
+//section to log user in
 
 // Define variables and initialize with empty values
 $username = $password = "";
