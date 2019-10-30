@@ -87,6 +87,11 @@ if (isset($_POST['continuetoship']))
     $errors['cvv'] = "Security code for card required";
   }
 
+  if(preg_match('/^[0-9]{3,4}$/', $cvv))//use {3} for non-AMEX cards
+{
+	$errors['cvv'] = "Correct security code for card required";
+}
+
   function luhn_check($cardnumber) {
 
   // Strip any non-digits (useful for credit card numbers with spaces and hyphens)
@@ -143,7 +148,7 @@ if (isset($_POST['continuetoship']))
 
 if (isset($_POST['continuetoshipping']))
 {
-  $name =$_POST['firstname'];
+  $name =$_POST['fname'];
   $email = $_POST['email'];
   $address = $_POST['address'];
   $city = $_POST['city'];
@@ -154,7 +159,7 @@ if (isset($_POST['continuetoshipping']))
   //check that forms are filled in properly
   if(empty($name))
   {
-    $errors['firstname'] = "Full name required";
+    $errors['fname'] = "Full name required";
   }
 
 
