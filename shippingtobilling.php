@@ -1,10 +1,9 @@
 <?php
-session_start();
 
 $errors = array();
 if (isset($_POST['continuetoship']))
 {
-  $name =$_POST['firstname'];
+  $name = $_POST['firstname'];
   $email = $_POST['email'];
   $address = $_POST['address'];
   $city = $_POST['city'];
@@ -48,6 +47,11 @@ if (isset($_POST['continuetoship']))
     $errors['zip'] = "Zipcode required";
   }
 
+  if(!is_numeric($zipcode))
+ {
+  $errors['zip'] = "Please enter a correct zipcode";
+ }
+
   if(empty($cardname)){
     $errors['cardname'] = "Cardname required";
   }
@@ -56,17 +60,64 @@ if (isset($_POST['continuetoship']))
     $errors['cardnumber'] = "Cardnumber required";
   }
 
+  if(!is_numeric($cardnumber))
+ {
+  $errors['cardnumber'] = "Please enter a correct card number";
+ }
+
   if(empty($expmonth)){
     $errors['expmonth'] = "Expiration month for card required";
   }
+
+  if(!is_numeric($expmonth) || $expm < 1 || $expm > 12)
+ {
+  $errors['expmonth'] = "Please enter a correct month";
+ }
 
   if(empty($expyear)){
     $errors['expyear'] = "Expiration year for card required";
   }
 
+  if(!is_numeric($expmonth) || $expm < 2018 || $expm > 2032)
+ {
+  $errors['expmonth'] = "Please enter a correct year";
+ }
+
   if(empty($cvv)){
     $errors['cvv'] = "Security code for card required";
   }
+
+  function luhn_check($cardnumber) {
+
+  // Strip any non-digits (useful for credit card numbers with spaces and hyphens)
+  $number=preg_replace('/\D/', '', $cardnumber);
+
+  // Set the string length and parity
+  $number_length=strlen($cardnumber);
+  $parity=$number_length % 2;
+
+  // Loop through each digit and do the maths
+  $total=0;
+  for ($i=0; $i<$cardnumber_length; $i++) {
+    $digit=$cardnumber[$i];
+    // Multiply alternate digits by two
+    if ($i % 2 == $parity) {
+      $digit*=2;
+      // If the sum is two digits, add them together (in effect)
+      if ($digit > 9) {
+        $digit-=9;
+      }
+    }
+    // Total up the digits
+    $total+=$digit;
+  }
+
+  // If the total mod 10 equals 0, the number is valid
+  return ($total % 10 == 0) ? TRUE : FALSE;
+
+}
+
+
 
   //if no errors
   if(count($errors === 0))
