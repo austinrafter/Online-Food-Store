@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 $errors = array();
 if (isset($_POST['continuetoship']))
@@ -22,6 +23,9 @@ if (isset($_POST['continuetoship']))
     $errors['firstname'] = "Full name required";
   }
 
+  if(preg_match('/^[A-Za-z \'-]+$/i',$name)){
+    $errors['firstname'] = "Please enter a name";
+  }
 
   if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
     $errors['email'] = "Email address is invalid";
@@ -33,6 +37,13 @@ if (isset($_POST['continuetoship']))
 
   if(empty($address)){
     $errors['address'] = "Address required";
+  }
+
+  $regex = '/[A-Za-z0-9\-\\,.]+/';
+  $is_valid = preg_match($regex, $address); // Becomes true or false.
+
+  if($is_valid === FALSE ){
+    $errors['address'] = "Please enter a valid address";
   }
 
   if(empty($city)){
@@ -52,6 +63,17 @@ if (isset($_POST['continuetoship']))
   $errors['zip'] = "Please enter a correct zipcode";
  }
 
+ function validateZipCode($zipCode)
+ {if (preg_match('#[0-9]{5}#', $zipCode))
+    {
+	return true;
+    }
+else{
+	return false;
+  $errors['zip'] = "Please enter a valid zipcode";
+    }
+}
+
   if(empty($cardname)){
     $errors['cardname'] = "Cardname required";
   }
@@ -63,24 +85,6 @@ if (isset($_POST['continuetoship']))
   if(!is_numeric($cardnumber))
  {
   $errors['cardnumber'] = "Please enter a correct card number";
- }
-
-  if(empty($expmonth)){
-    $errors['expmonth'] = "Expiration month for card required";
-  }
-
-  if(!is_numeric($expmonth) || $expm < 1 || $expm > 12)
- {
-  $errors['expmonth'] = "Please enter a correct month";
- }
-
-  if(empty($expyear)){
-    $errors['expyear'] = "Expiration year for card required";
-  }
-
-  if(!is_numeric($expmonth) || $expm < 2018 || $expm > 2032)
- {
-  $errors['expmonth'] = "Please enter a correct year";
  }
 
   if(empty($cvv)){
@@ -120,6 +124,10 @@ if (isset($_POST['continuetoship']))
   // If the total mod 10 equals 0, the number is valid
   return ($total % 10 == 0) ? TRUE : FALSE;
 
+  if(FALSE){
+    $errors['cardnumber'] = "Not a valid card number";
+  }
+
 }
 
 
@@ -127,19 +135,25 @@ if (isset($_POST['continuetoship']))
   //if no errors
   if(count($errors === 0))
   {
+    $sql = "INSERT INTO billing(name, email, address, city, state, zip) VALUES('$_POST[firstname]','$_POST[email]','$_POST[address]','$_POST[city]','$_POST[state]','$_POST[zip]',)";
 
     //check if sameadress button has been checked if so move to shipping if not move to shipping info
     if(isset($_POST['sameadr']))
     {
 
-      header("location: shipping.php");
+
+      $sql = "INSERT INTO shipping(name, email,  address, city, state, zip) VALUES('$_POST[firstname]','$_POST[email]','$_POST[address]','$_POST[city]','$_POST[state]','$_POST[zip]',)";
+
+      $_SESSION["zipcode"] = $zipcode;
+
+      //header("location: shipping.php");
 
 
     }
     else
     {
 
-      header("location: shippinginfo.php");
+      //header("location: shippinginfo.php");
     }
 
   }
@@ -175,6 +189,13 @@ if (isset($_POST['continuetoshipping']))
     $errors['address'] = "Address required";
   }
 
+  $regex = '/[A-Za-z0-9\-\\,.]+/';
+  $is_valid = preg_match($regex, $address); // Becomes true or false.
+
+  if($is_valid === FALSE ){
+    $errors['address'] = "Please enter a valid address";
+  }
+
   if(empty($city)){
     $errors['city'] = "City required";
   }
@@ -187,11 +208,28 @@ if (isset($_POST['continuetoshipping']))
     $errors['zip'] = "Zipcode required";
   }
 
+  if(!is_numeric($zipcode))
+ {
+  $errors['zip'] = "Please enter a correct zipcode";
+ }
+
+ function validateZipCode($zipCode)
+ {if (preg_match('#[0-9]{5}#', $zipCode))
+    {
+	return true;
+    }
+else{
+	return false;
+  $errors['zip'] = "Please enter a valid zipcode";
+    }
+}
+
 
   //if no errors
   if(count($errors === 0))
   {
-
+    $sql = "INSERT INTO shipping(name, email,  address, city, state, zip) VALUES('$_POST[fname]','$_POST[email]','$_POST[address]','$_POST[city]','$_POST[state]','$_POST[zip]',)";
+      $_SESSION["zipcode"] = $zipcode;
       header("location: shipping.php");
   }
 
