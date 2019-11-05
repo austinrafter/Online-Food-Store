@@ -11,6 +11,7 @@ $city = "";
 $state = "";
 $zipcode = "";
 $cardtype = "";
+$cardnumber = "";
 
 
 if (isset($_POST['continuetoship']))
@@ -124,40 +125,76 @@ if (!preg_match('/^[0-9]{5}?$/', $zipcode))
   if(!is_numeric($cardnumber))
  {
   $errors['cardnumber'] = "Please enter only numbers for the card number";
-}
+ }
 
-  function validatecard($number)
+  if($cardtype === $visa_cvv)
+  {
+    if (!preg_match("/^4[0-9]{12}(?:[0-9]{3})?$/",$cardnumber))
+    {
+        $errors['cardnumber'] = "Please enter a real card number";
+    }
+  }
+
+    if($cardtype === $mastercard_cvv)
+    {
+     if (!preg_match("/^5[1-5][0-9]{14}$/",$cardnumber))
+     {
+      $errors['cardnumber'] = "Please enter a real card number";
+      }
+    }
+
+    if($cardtype === $amex_cvv)
+    {
+     if (!preg_match("/^3[47][0-9]{13}$/",$cardnumber))
+    {
+      $errors['cardnumber'] = "Please enter a real card number";
+
+    }
+  }
+
+  if($cardtype === $discover_cvv)
+  {
+  if (!preg_match("/^6(?:011|5[0-9]{2})[0-9]{12}$/",$cardnumber))
+    {
+      $errors['cardnumber'] = "Please enter a real card number";
+    }
+  }
+
+
+
+
+  /*function validatecard($number)
  {
     global $type;
 
-    $cardtype = array(
+    $cardtypes = array(
         "visa"       => "/^4[0-9]{12}(?:[0-9]{3})?$/",
         "mastercard" => "/^5[1-5][0-9]{14}$/",
         "amex"       => "/^3[47][0-9]{13}$/",
         "discover"   => "/^6(?:011|5[0-9]{2})[0-9]{12}$/",
     );
 
-    if (preg_match($cardtype['visa'],$number))
+    if (preg_match($cardtypes['visa'],$number))
     {
 	$type= "visa";
         return 'visa';
         echo "<green> $type detected. credit card number is valid</green>";
 
     }
-    else if (preg_match($cardtype['mastercard'],$number))
+    else if (preg_match($cardtypes['mastercard'],$number))
     {
 	$type= "mastercard";
         return 'mastercard';
         echo "<green> $type detected. credit card number is valid</green>";
     }
-    else if (preg_match($cardtype['amex'],$number))
+    else if (preg_match($cardtypes['amex'],$number))
     {
 	$type= "amex";
         return 'amex';
         echo "<green> $type detected. credit card number is valid</green>";
 
     }
-    else if (preg_match($cardtype['discover'],$number))
+    else if (preg_match($cardtypes['discover'],$number))
     {
 	$type= "discover";
         return 'discover';
@@ -170,9 +207,9 @@ if (!preg_match('/^[0-9]{5}?$/', $zipcode))
     }
  }
 
-validatecard($cardnumber);
+validatecard($cardnumber);*/
 
-function luhn_check($number) {
+/*function luhn_check($number) {
 
 // Strip any non-digits (useful for credit card numbers with spaces and hyphens)
 $number=preg_replace('/\D/', '', $number);
@@ -206,7 +243,7 @@ if(FALSE){
 
 }
 
-luhn_check($cardnumber);
+luhn_check($cardnumber);*/
 
       if(empty($cvv)){
         $errors['cvv'] = "Security code for card required";
@@ -224,7 +261,7 @@ luhn_check($cardnumber);
       //check if there are 4 numbers and throw error if not
     if (!preg_match('/^[0-9]{4}?$/', $cvv))
      {
-     $errors['cvv'] = "Please enter a valid 4 digit CVV code";
+     $errors['cvv'] = "Please enter a valid 4 digit CVV code for that cardtype";
      }
     }
 
@@ -234,7 +271,7 @@ luhn_check($cardnumber);
       //check if there are 3 numbers and throw error if not
       if(!preg_match('/^[0-9]{3}?$/', $cvv))
      {
-     $errors['cvv'] = "Please enter a valid 3 digit CVV code";
+     $errors['cvv'] = "Please enter a valid 3 digit CVV code for that cardtype";
 
      }
    }
