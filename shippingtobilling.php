@@ -10,6 +10,7 @@ $address = "";
 $city = "";
 $state = "";
 $zipcode = "";
+$cardtype = "";
 
 
 if (isset($_POST['continuetoship']))
@@ -26,7 +27,30 @@ if (isset($_POST['continuetoship']))
   $expmonth = $_POST['expmonth'];
   $expyear = $_POST['expyear'];
   $cvv = $_POST['cvv'];
+  $accepted_city_cap = "San Jose";
+  $accepted_city_low = "san jose";
+  $accepted_state = "CA";
+  $amex_cvv = "AMEX";
+  $visa_cvv = "visa";
+  $mastercard_cvv = "mastercard";
+  $discover_cvv = "discover";
 
+  //if shipping and billing are set as same address
+  if(isset($_POST['sameadr']))
+  {
+    //if state isnt california tell them thats where we ship
+    if($state !== $accepted_state  )
+    {
+      $errors['state_selection'] = "We can only ship within california";
+    }
+
+    //if the city isnt san jose tell them thats where we ship
+    if($city !== $accepted_city_cap )
+    {
+
+      $errors['city'] = "We can only ship in San Jose";
+    }
+  }
 
   //check that forms are filled in properly
   if(empty($name))
@@ -58,6 +82,11 @@ if (isset($_POST['continuetoship']))
   if(empty($city)){
     $errors['city'] = "City required";
   }
+
+  if(!is_string($city))
+ {
+  $errors['city'] = "Please enter only numbers for the zipcode";
+ }
 
   /*if(empty($state)){
     $errors['state'] = "State required";
@@ -188,11 +217,29 @@ luhn_check($cardnumber);
       $errors['cardnumber'] = "Please enter only numbers for cvv number";
      }
 
-    if (!preg_match('/^[0-9]{3,4}?$/', $cvv))
-        {
 
-      $errors['cvv'] = "Please enter the correct numbered CVV";
-        }
+     //if card is amex then must have 4 cvv numbers
+    if ($cardtype === $amex_cvv )
+    {
+      //check if there are 4 numbers and throw error if not
+    if (!preg_match('/^[0-9]{4}?$/', $cvv))
+     {
+     $errors['cvv'] = "Please enter a valid 4 digit CVV code";
+     }
+    }
+
+    // mastercard or visa or discover  must have 3 numbers
+    if ($cardtype === $visa_cvv xor $cardtype === $mastercard_cvv xor $cardtype === $discover_cvv  )
+    {
+      //check if there are 3 numbers and throw error if not
+      if(!preg_match('/^[0-9]{3}?$/', $cvv))
+     {
+     $errors['cvv'] = "Please enter a valid 3 digit CVV code";
+
+     }
+   }
+
+
 
 
   //if no errors
@@ -204,13 +251,6 @@ luhn_check($cardnumber);
     //check if sameadress button has been checked if so move to shipping if not move to shipping info
     if(isset($_POST['sameadr']))
     {
-      $selected_val = ['state_selection'];
-      $city_select = ['city'];
-
-      if($selected_val !== "CA" || $city_select !== "San Jose"){
-        $errors['state_selection'] = "We can only ship within california";
-        $errors['state_selection'] = "We can only ship in San Jose";
-      }
 
 
       //$sql = "INSERT INTO shipping(name, email,  address, city, state, zip) VALUES('$_POST[firstname]','$_POST[email]','$_POST[address]','$_POST[city]','$_POST[state]','$_POST[zip]',)";
@@ -237,8 +277,12 @@ if (isset($_POST['continuetoshipping']))
   $email = $_POST['email'];
   $address = $_POST['address'];
   $city = $_POST['city'];
-  //$state = $_POST['state'];
+  $state = $_POST['state_selection'];
   $zipcode = $_POST['zip'];
+  $accepted_city_cap = "San Jose";
+  $accepted_city_low = "san jose";
+  $accepted_state = "CA";
+
 
 
   //check that forms are filled in properly
@@ -275,6 +319,17 @@ if (isset($_POST['continuetoshipping']))
   /*if(empty($state)){
     $errors['state'] = "State required";
   }*/
+
+  if($state !== $accepted_state  )
+  {
+    $errors['state_selection'] = "We can only ship within california";
+  }
+
+  if($city !== $accepted_city_cap )
+  {
+
+    $errors['city'] = "We can only ship in San Jose";
+  }
 
   if(empty($zipcode)){
     $errors['zip'] = "Zipcode required";
