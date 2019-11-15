@@ -1,11 +1,12 @@
 <?php
 session_start();
 
+require_once 'config.php';
+require_once 'emailcontroller.php';
+
   $errors = array();
   $username = "";
   $email = "";
-
-require_once 'config.php';
 
 /*section to signup user*/
 
@@ -26,19 +27,23 @@ require_once 'config.php';
   }
 
 
-  if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+  if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+  {
     $errors['email'] = "Email address is invalid";
   }
 
-  if(empty($email)){
+  if(empty($email))
+  {
     $errors['email'] = "Email required";
   }
 
-  if(empty($password)){
+  if(empty($password))
+  {
     $errors['pass_1'] = "Password required";
   }
 
-  if($password !== $pass_2){
+  if($password !== $pass_2)
+  {
       $errors['pass_1'] = "Passwords do not match.";
   }
 
@@ -51,7 +56,8 @@ require_once 'config.php';
   $userCount = $result->num_rows;
   $stmt->close();
 
-  if($userCount > 0) {
+  if($userCount > 0)
+  {
     $errors['email'] = "Email already exists";
   }
 
@@ -60,14 +66,17 @@ require_once 'config.php';
   if(count($errors) === 0)
   {
     $hashpassword = password_hash($password, PASSWORD_DEFAULT); //encrypt password before storage
-    $sql = "INSERT INTO users(username, email, password) VALUES('$_POST[username]','$_POST[email]','$hashpassword')";
+    $token = bin2hex(random_bytes(50));
+    $sql = "INSERT INTO users(username, email, token, password) VALUES('$_POST[username]','$_POST[email]','$token','$hashpassword')";
     $query = mysqli_query($conn,$sql);
-    if ($query){
+    if ($query)
+    {
       //login user
       $user_id = $conn->insert_id;
       $_SESSION['id'] = $user_id;
       $_SESSION['username'] = $username;
       $_SESSION['email'] = $user_id;
+      $_SESSION["loggedin"] = true;
 
 
       //set flash Message
@@ -86,9 +95,10 @@ require_once 'config.php';
 /* section to login user */
 
 // Check if the user is already logged in, if yes then redirect them to welcome page
-if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true)
+{
     header("location: index.php");
-    exit;
+    exit(0);
 }
 
 // Define variables and initialize with empty values
@@ -96,28 +106,35 @@ $username = $password_log = "";
 $username_err = $password_err = "";
 
 // Processing form data when form is submitted
-if($_SERVER["REQUEST_METHOD"] == "POST"){
+if($_SERVER["REQUEST_METHOD"] == "POST")
+{
 
     // Check if username is empty
-    if(empty(trim($_POST["username"]))){
+    if(empty(trim($_POST["username"])))
+    {
         $username_err = "Please enter username.";
-    } else{
+    } else
+    {
         $username = trim($_POST["username"]);
     }
 
     // Check if password is empty
-    if(empty(trim($_POST["password"]))){
+    if(empty(trim($_POST["password"])))
+    {
         $password_err = "Please enter your password.";
-    } else{
+    } else
+    {
         $password_log = trim($_POST["password"]);
     }
 
     // Validate credentials
-    if(empty($username_err) && empty($password_err)){
+    if(empty($username_err) && empty($password_err))
+    {
         // Prepare a select statement
         $sql = "SELECT id, username, password FROM users WHERE username = ?";
 
-        if($stmt = mysqli_prepare($conn, $sql)){
+        if($stmt = mysqli_prepare($conn, $sql))
+        {
           // Set parameters
           $param_username = $username;
 
@@ -125,7 +142,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             mysqli_stmt_bind_param($stmt, "s", $param_username);
 
             // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
+            if(mysqli_stmt_execute($stmt))
+            {
                 // Store result
                 mysqli_stmt_store_result($stmt);
 
@@ -141,9 +159,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     if(mysqli_stmt_fetch($stmt))
                     {
                       //$temphashedpass = password_hash($password_log, PASSWORD_DEFAULT);
-                      echo $password_log;
-                      //echo "<br>";
-                      echo $hashedpassword;
                         if(password_verify($password_log, $hashedpassword))
                         {
                             // Password is correct, so start a new session
@@ -158,16 +173,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             $_SESSION['message']= "You are now logged in!";
                             $_SESSION['alert-class']="alert-success";
                             header("location: index.php");
-                        } else{
+                            exit(0);
+                        } else
+                        {
                             // Display an error message if password is not valid
                             $password_err = "The password you entered was not valid.";
                         }
                     }
-                } else{
+                } else
+                {
                     // Display an error message if username doesn't exist
                     $username_err = "No account found with that username.";
                 }
-            } else{
+            } else
+            {
                 echo "Oops! Something went wrong. Please try again later.";
             }
         }
@@ -179,4 +198,87 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Close connection
     mysqli_close($conn);
 }
+
+
+
+/*section for forgotten password*/
+
+
+//if user clicks on the email me the reset button
+
+if(isset($_POST['forgot_password_btn']))
+{
+  $email = $_POST['email'];
+
+  if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+  {
+    $errors['email'] = "Email address is invalid";
+  }
+
+  if(empty($email))
+  {
+    $errors['email'] = "Email required";
+  }
+
+  if(count($errors) === 0)
+  {
+    $sql = "SELECT * FROM users WHERE email = '$email' LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+    $user = mysqli_fetch_assoc($result);
+    $token = $user['token'];
+    sendPasswordResetLink($email, $token);
+    header("location: password_message.php");
+    exit(0);
+  }
+}
+
+//if user clicked reset Password
+
+if(isset($_POST['reset_password_btn']))
+{
+  $password = $_POST['password'];
+  $password_confirm = $_POST['password_confirm'];
+
+  if(empty($password))
+  {
+    $errors['password'] = "Password required";
+  }
+
+  if(empty($password_confirm))
+  {
+    $errors['pass_confirm'] = "Password confirmation required";
+  }
+
+
+  if($password !== $pass_confirm)
+  {
+      $errors['password'] = "Passwords do not match.";
+  }
+
+  $password = password_hash($password, PASSWORD_DEFAULT); //encrypt password before storage
+  $email = $_SESSION['email'];
+
+  if(count($errors) === 0)
+  {
+    $sql = "UPDATE users SET password='$password' WHERE email='$email'";
+    $result = mysqli_query($conn, $sql);
+    if($query){
+      header("location: login.php");
+      exit(0);
+   }
+ }
+}
+
+  function resetPassword($token)
+  {
+    global $conn;
+    $sql = "SELECT * FROM users WHERE token= '$token' LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+    $user = mysqli_fetch_assoc($result);
+    $_SESSION['email'] = $user['email'];
+    header('location: reset_password.php');
+    exit(0);
+  }
+
+
 ?>
